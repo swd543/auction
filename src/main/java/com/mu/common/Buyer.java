@@ -1,5 +1,7 @@
 package com.mu.common;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Buyer {
@@ -7,6 +9,8 @@ public class Buyer {
      * The bidding price offered by this buyer
      */
     private double BNK;
+    private double profit;
+    private ArrayList<ArrayList<Double>> won_bids;
 
     /**
      * The bidding factor for this buyer, unique alpha value >= 1
@@ -23,6 +27,8 @@ public class Buyer {
     public Buyer(double alphaNK, double SK) {
         this.alphaNK = alphaNK;
         this.SK = SK;
+        this.profit = 0;
+        this.won_bids = new ArrayList<ArrayList<Double>>();
     }
 
     public Buyer(double SK) {
@@ -61,6 +67,22 @@ public class Buyer {
     public double bid(){
         this.BNK=this.alphaNK*this.SK;
         return this.BNK;
+    }
+
+    public void addWonBid(double avg, double bid){
+        won_bids.add(new ArrayList<Double>(Arrays.asList(avg,bid)));
+    }
+
+    public void calculateProfit(){
+        for (int i = 0; i < won_bids.size(); i++){
+            for (int j = 0; j < won_bids.get(i).size(); j++){
+                profit += won_bids.get(i).get(j);
+            }
+        }
+    }
+
+    public double getProfit(){
+        return profit;
     }
 
     @Override

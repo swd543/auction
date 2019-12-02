@@ -17,46 +17,51 @@ public class Auction {
         var params=AuctionParams.getDefault();
         System.out.println("Parameters set for the auction are --> "+params);
 
-
         // Initialize buyers and sellers
         var sellers=new ArrayList<Seller>();
         var buyers=new ArrayList<Buyer>();
+
         for(var i=0;i<params.getK();i++){
             sellers.add(new Seller(params));
         }
-        System.out.println(sellers);
+        // System.out.println(sellers);
         for(var i=0;i<params.getN();i++){
             buyers.add(new Buyer());
         }
-        System.out.println(buyers);
+        // System.out.println(buyers);
 
-        // Each buyer participates in every auction set by every seller
-        for(var seller:sellers){
-            for(var buyer:buyers){
-                buyer.setSK(seller.getSK());
-                buyer.bid();
-                System.out.println(buyer+" bid "+buyer.getBNK());
+        for(var i=0; i<params.getR(); i++) {
+            // Each buyer participates in every auction set by every seller
+            for (var seller : sellers) {
+                for (var buyer : buyers) {
+                    buyer.setSK(seller.getSK());
+                    buyer.bid();
+                    // System.out.println(buyer+" bid "+buyer.getBNK());
+                }
+                // Average all the bids to get the market price
+                var marketPrice = buyers.stream().mapToDouble(Buyer::getBNK).average().orElse(0);
+                System.out.println("Auction finished! Market price determined is " + marketPrice);
+
+                // Sort the buyers array
+                var sortedBuyers = buyers.stream()
+                        .filter(buyer -> buyer.getBNK() < marketPrice)
+                        .sorted((buyer, t1) -> {
+                            if (buyer.getBNK() > t1.getBNK()) {
+                                return -1;
+                            } else if (buyer.getBNK() < t1.getBNK()) {
+                                return 1;
+                            }
+                            return 0;
+                        })
+                        .collect(Collectors.toList());
+
+                var winningBidder = sortedBuyers.get(0);
+                var winningPrice = sortedBuyers.get(1).getBNK();
+
+                // winningBidder.addWonBid(marketPrice, winningPrice);
+                // seller.addBid(winningPrice);
+                System.out.println(winningBidder + " wins the winning round " + (i+1) + " at " + winningPrice);
             }
-            // Average all the bids to get the market price
-            var marketPrice=buyers.stream().mapToDouble(Buyer::getBNK).average().orElse(0);
-            System.out.println("Auction finished! Market price determined is "+marketPrice);
-
-            // Sort the buyers array
-            var sortedBuyers=buyers.stream()
-                    .filter(buyer -> buyer.getBNK()<marketPrice)
-                    .sorted((buyer, t1) -> {
-                        if(buyer.getBNK()>t1.getBNK()){
-                            return -1;
-                        }
-                        else if(buyer.getBNK()<t1.getBNK()){
-                            return 1;
-                        }
-                        return 0;
-                    })
-                    .collect(Collectors.toList());
-            var winningBidder=sortedBuyers.get(0);
-            var winningPrice=sortedBuyers.get(1).getBNK();
-            System.out.println(winningBidder+" wins the winning round at "+winningPrice);
         }
     }
 }
