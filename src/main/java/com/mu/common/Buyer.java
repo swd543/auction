@@ -1,5 +1,7 @@
 package com.mu.common;
 
+import java.util.Random;
+
 public class Buyer {
     /**
      * The bidding price offered by this buyer
@@ -9,8 +11,9 @@ public class Buyer {
     /**
      * The bidding factor for this buyer, unique alpha value >= 1
      * TODO: initially needs to be randomized, then after each auction round needs to be updated with new alpha values
+     * TODO: The line below generates randoms between 1 and 2, should it be more?
      */
-    private double alphaNK;
+    private double alphaNK=new Random().nextDouble()+1;
 
     /**
      * The quoted selling price offered by the seller
@@ -21,6 +24,12 @@ public class Buyer {
         this.alphaNK = alphaNK;
         this.SK = SK;
     }
+
+    public Buyer(double SK) {
+        this.SK = SK;
+    }
+
+    public Buyer(){}
 
     public double getBNK() {
         return BNK;
@@ -47,6 +56,11 @@ public class Buyer {
     public Buyer setSK(double SK) {
         this.SK = SK;
         return this;
+    }
+
+    public double bid(){
+        this.BNK=this.alphaNK*this.SK;
+        return this.BNK;
     }
 
     @Override

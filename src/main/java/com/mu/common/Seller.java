@@ -21,4 +21,11 @@ public class Seller {
     public double getSK() {
         return SK;
     }
+
+    @Override
+    public String toString() {
+        return "Seller{" +
+                "SK(selling price)=" + SK +
+                '}';
+    }
 }
