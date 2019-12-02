@@ -5,6 +5,8 @@ import com.mu.common.Buyer;
 import com.mu.common.Seller;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * The main class will go here
@@ -37,7 +39,24 @@ public class Auction {
             }
             // Average all the bids to get the market price
             var marketPrice=buyers.stream().mapToDouble(Buyer::getBNK).average().orElse(0);
-            System.out.println("Auction finished! "+marketPrice);
+            System.out.println("Auction finished! Market price determined is "+marketPrice);
+
+            // Sort the buyers array
+            var sortedBuyers=buyers.stream()
+                    .filter(buyer -> buyer.getBNK()<marketPrice)
+                    .sorted((buyer, t1) -> {
+                        if(buyer.getBNK()>t1.getBNK()){
+                            return -1;
+                        }
+                        else if(buyer.getBNK()<t1.getBNK()){
+                            return 1;
+                        }
+                        return 0;
+                    })
+                    .collect(Collectors.toList());
+            var winningBidder=sortedBuyers.get(0);
+            var winningPrice=sortedBuyers.get(1).getBNK();
+            System.out.println(winningBidder+" wins the winning round at "+winningPrice);
         }
     }
 }
