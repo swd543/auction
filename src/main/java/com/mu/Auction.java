@@ -5,63 +5,51 @@ import com.mu.common.Buyer;
 import com.mu.common.Seller;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
  * The main class will go here
  */
 public class Auction {
+    AuctionParams params;
+    ArrayList<Seller> sellers;
+    ArrayList<Buyer> buyers;
+
     public static void main(String[] args) {
         System.out.println("Hello auction!");
         var params=AuctionParams.getDefault();
+        Auction auction;
         System.out.println("Parameters set for the auction are --> "+params);
 
-        // Initialize buyers and sellers
-        var sellers=new ArrayList<Seller>();
-        var buyers=new ArrayList<Buyer>();
+        if (!params.isLeveled())
+            auction = new AuctionPure(params);
+        else
+            auction = new AuctionLeveled(params);
+        auction.start();
+        auction.printStatistics(auction.getBuyers(),auction.getSellers());
+        // var marketPrice = buyers.stream().filter(buyer -> !winners.contains(buyer)).mapToDouble(Buyer::getBNK).average().orElse(0);
+    }
+    public void printStatistics(ArrayList<Buyer> buyers, ArrayList<Seller> sellers){
+        System.out.println("*** STATISTICS ***");
 
-        for(var i=0;i<params.getK();i++){
-            sellers.add(new Seller(params));
+        for (var seller:sellers){
+            System.out.println("Seller " + seller.getNumber() + ":");
+            System.out.println("Market prices across rounds: " +
+                    seller.getAuctions().stream().map(n->n.get(0)).map(n->(double) Math.round(n * 100) / 100).collect(Collectors.toList()));
+            System.out.println("The profit equals " + ((double) Math.round(seller.getProfit() * 100) / 100) + ".");
         }
-        // System.out.println(sellers);
-        for(var i=0;i<params.getN();i++){
-            buyers.add(new Buyer());
+        for (var buyer:buyers){
+            System.out.println("Buyer " + buyer.getNumber() + ":");
+            System.out.println("The profit equals " + ((double) Math.round(buyer.getProfit() * 100) / 100) + ".");
         }
-        // System.out.println(buyers);
+    }
+    public void start(){}
 
-        for(var i=0; i<params.getR(); i++) {
-            // Each buyer participates in every auction set by every seller
-            for (var seller : sellers) {
-                for (var buyer : buyers) {
-                    buyer.setSK(seller.getSK());
-                    buyer.bid();
-                    // System.out.println(buyer+" bid "+buyer.getBNK());
-                }
-                // Average all the bids to get the market price
-                var marketPrice = buyers.stream().mapToDouble(Buyer::getBNK).average().orElse(0);
-                System.out.println("Auction finished! Market price determined is " + marketPrice);
+    public ArrayList<Buyer> getBuyers() {
+        return buyers;
+    }
 
-                // Sort the buyers array
-                var sortedBuyers = buyers.stream()
-                        .filter(buyer -> buyer.getBNK() < marketPrice)
-                        .sorted((buyer, t1) -> {
-                            if (buyer.getBNK() > t1.getBNK()) {
-                                return -1;
-                            } else if (buyer.getBNK() < t1.getBNK()) {
-                                return 1;
-                            }
-                            return 0;
-                        })
-                        .collect(Collectors.toList());
-
-                var winningBidder = sortedBuyers.get(0);
-                var winningPrice = sortedBuyers.get(1).getBNK();
-
-                // winningBidder.addWonBid(marketPrice, winningPrice);
-                // seller.addBid(winningPrice);
-                System.out.println(winningBidder + " wins the winning round " + (i+1) + " at " + winningPrice);
-            }
-        }
+    public ArrayList<Seller> getSellers() {
+        return sellers;
     }
 }

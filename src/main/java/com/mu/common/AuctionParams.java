@@ -151,6 +151,6 @@ public class AuctionParams {
     }
 
     public static AuctionParams getDefault(){
-        return new AuctionParams(10, 100, 5, 100d, 0.9, true);
+        return new AuctionParams(5, 5, 5, 100d, 0.9, false);
     }
-}
+} // return new AuctionParams(10, 100, 5, 100d, 0.9, true)
