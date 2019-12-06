@@ -1,5 +1,7 @@
 package com.mu.common;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Buyer {
@@ -13,7 +15,13 @@ public class Buyer {
      * TODO: initially needs to be randomized, then after each auction round needs to be updated with new alpha values
      * TODO: The line below generates randoms between 1 and 2, should it be more?
      */
+    private static int identifier = 1;
     private double alphaNK=new Random().nextDouble()+1;
+    private double decreaseFactor= new Random().nextDouble();   // must be lower than or equal to 1
+    private double increaseFactor= new Random().nextDouble()+1; // must bre greater than or equal to 1
+    private double profit = 0;
+    private int number;  // unique integer for an instance
+    private double[] prevBids; // array of previous bids  for all sellers
 
     /**
      * The quoted selling price offered by the seller
@@ -29,7 +37,11 @@ public class Buyer {
         this.SK = SK;
     }
 
-    public Buyer(){}
+    public Buyer(int n){
+        this.number = identifier;
+        identifier++;
+        prevBids = new double[n];
+    }
 
     public double getBNK() {
         return BNK;
@@ -58,11 +70,30 @@ public class Buyer {
         return this;
     }
 
-    public double bid(){
+    public double bid(Seller seller){
+        if (seller.getAuctions().size() != 0) {
+            var num = seller.getAuctions().size() - 1;
+            if (seller.getWinners().get(num) == this || this.prevBids[seller.getNumber() - 1] >= seller.getAuctions().get(num).get(0))
+                this.alphaNK -= decreaseFactor;
+            else
+                this.alphaNK += increaseFactor;
+        }
         this.BNK=this.alphaNK*this.SK;
+        prevBids[seller.getNumber()-1] = this.BNK;
         return this.BNK;
     }
 
+    public void calculateProfit(double avg, double bid){
+        this.profit += (avg-bid);
+    }
+
+    public double getProfit(){
+        return this.profit;
+    }
+
+    public int getNumber(){
+        return this.number;
+    }
     @Override
     public String toString() {
         return "Buyer{" +
