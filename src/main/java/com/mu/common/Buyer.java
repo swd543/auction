@@ -73,6 +73,7 @@ public class Buyer {
     public double bid(Seller seller){
         if (seller.getAuctions().size() != 0) {
             var num = seller.getAuctions().size() - 1;
+            // Adapt bids to the market prices across rounds
             if (seller.getWinners().get(num) == this || this.prevBids[seller.getNumber() - 1] >= seller.getAuctions().get(num).get(0))
                 this.alphaNK -= decreaseFactor;
             else

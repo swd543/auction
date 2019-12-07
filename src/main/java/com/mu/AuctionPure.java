@@ -6,10 +6,11 @@ import com.mu.common.Seller;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AuctionPure extends Auction{
-    ArrayList<Buyer> winners;
+    List<Buyer> winners;
 
     public AuctionPure(AuctionParams params){
         this.params=params;
@@ -35,6 +36,7 @@ public class AuctionPure extends Auction{
             for (var seller : sellers) {
                 seller.setSK();
                 for (var buyer : buyers) {
+                    // Bid only if they have not won previous auctions
                     if (!winners.contains(buyer)) {
                         buyer.setSK(seller.getSK());
                         buyer.bid(seller);
@@ -46,7 +48,7 @@ public class AuctionPure extends Auction{
                 var num = buyers.stream().filter(buyer -> !winners.contains(buyer)).count();
                 System.out.println("Auction finished! Market price determined is " +marketPrice+" with "+num+" buyers.");
 
-                // Sort the buyers array
+                // Sort the buyers array, do not consider previous winners
                 var sortedBuyers = buyers.stream()
                         .filter(buyer -> !winners.contains(buyer))
                         .filter(buyer -> buyer.getBNK() <= marketPrice)
@@ -62,12 +64,11 @@ public class AuctionPure extends Auction{
 
                 var winningBidder = sortedBuyers.get(0);
                 double winningPrice;
-
                 // in the case when there is only one buyer whose bid below the average price
                 try {
                     winningPrice = sortedBuyers.get(1).getBNK();
                 }
-                catch(Exception e) {
+                catch(IndexOutOfBoundsException e) {
                     winningPrice = (sortedBuyers.get(0).getBNK() + seller.getSK()) / 2;
                 }
                 System.out.println("Buyer "+ winningBidder.getNumber() + " wins the round " + (i+1) + " of Seller "+seller.getNumber()+" at " + winningPrice);
