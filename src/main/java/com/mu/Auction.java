@@ -25,6 +25,7 @@ public class Auction {
             auction = new AuctionPure(params);
         else
             auction = new AuctionLeveled(params);
+        System.out.printf("Auctioning by %s strategy.%n", auction.getClass().getSimpleName());
         auction.start();
         auction.printStatistics(auction.getBuyers(),auction.getSellers());
         // var marketPrice = buyers.stream().filter(buyer -> !winners.contains(buyer)).mapToDouble(Buyer::getBNK).average().orElse(0);
