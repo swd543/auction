@@ -23,6 +23,8 @@ public class Buyer {
     private int number;  // unique integer for an instance
     private double[] prevBids; // array of previous bids  for all sellers
 
+    private double penalityFee;
+
     /**
      * The quoted selling price offered by the seller
      */
@@ -31,6 +33,7 @@ public class Buyer {
     public Buyer(double alphaNK, double SK) {
         this.alphaNK = alphaNK;
         this.SK = SK;
+        this.penalityFee = 0;
     }
 
     public Buyer(double SK) {
@@ -70,6 +73,15 @@ public class Buyer {
         return this;
     }
 
+    public double getPenalityFee() {
+        return penalityFee;
+    }
+
+    public void setPenalityFee(double penalityFee) {
+        this.penalityFee = penalityFee;
+    }
+
+
     public double bid(Seller seller){
         if (seller.getAuctions().size() != 0) {
             var num = seller.getAuctions().size() - 1;
@@ -80,6 +92,23 @@ public class Buyer {
                 this.alphaNK += increaseFactor;
         }
         this.BNK=this.alphaNK*this.SK;
+        prevBids[seller.getNumber()-1] = this.BNK;
+        return this.BNK;
+    }
+
+    // define the bid for those buyers that already buyed a good in the same phase
+    public double leveledBid(Seller seller, SelledGood previousGood, double epsilon){
+        if (seller.getAuctions().size() != 0) {
+            var num = seller.getAuctions().size() - 1;
+            // Adapt bids to the market prices across rounds
+            if (seller.getWinners().get(num) == this || this.prevBids[seller.getNumber() - 1] >= seller.getAuctions().get(num).get(0))
+                this.alphaNK -= decreaseFactor;
+            else
+                this.alphaNK += increaseFactor;
+        }
+
+        this.penalityFee = epsilon * previousGood.getBid();
+        this.BNK = this.alphaNK * this.SK - ( previousGood.getMarketprice() -  previousGood.getPrice()) -  penalityFee;
         prevBids[seller.getNumber()-1] = this.BNK;
         return this.BNK;
     }
