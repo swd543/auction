@@ -76,6 +76,14 @@ public class AuctionLeveled extends Auction{
                         .collect(Collectors.toList());
 
                 var winningBidder = sortedBuyers.get(0);
+                var counter = 0;
+                var pos = 0;
+                for (int j = 0; j < selledGoods.size(); j++){
+                    if (selledGoods.get(i).getNumBuyer() == winningBidder.getNumber()){
+                        counter += 1;
+                        pos = j;
+                    }
+                }
 
                 double winningPrice;
 
@@ -86,6 +94,11 @@ public class AuctionLeveled extends Auction{
                     winningPrice = (sortedBuyers.get(0).getBNK() + seller.getSK()) / 2;
                 }
                 System.out.println("Buyer " + winningBidder.getNumber() + " wins the round " + (i + 1) + " of Seller " + seller.getNumber() + " at " + winningPrice);
+
+                var oldProfit = selledGoods.get(pos).getMarketprice() - selledGoods.get(pos).getPrice() - (
+                        params.getEpsilon() * winningBidder.getBNK());
+
+                var newProfit = marketPrice - winningPrice - (params.getEpsilon() * selledGoods.get(pos).getBid());
 
                 winners.add(winningBidder);
                 winningBidder.calculateProfit(marketPrice, winningPrice - sortedBuyers.get(0).getPenalityFee());
