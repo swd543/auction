@@ -2,6 +2,7 @@ package com.mu.common;
 
 public class SelledGood {
     int numBuyer;
+    Seller seller;
     double price;
     double marketprice;
     double bid;
@@ -36,5 +37,13 @@ public class SelledGood {
 
     public void setBid(double bid) {
         this.bid = bid;
+    }
+
+    public Seller getSeller() {
+        return seller;
+    }
+
+    public void setSeller(Seller seller) {
+        this.seller = seller;
     }
 }

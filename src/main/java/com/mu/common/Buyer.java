@@ -16,7 +16,7 @@ public class Buyer {
      * TODO: The line below generates randoms between 1 and 2, should it be more?
      */
     private static int identifier = 1;
-    private double alphaNK=new Random().nextDouble()+1;
+    private double alphaNK= (new Random().nextDouble() * 100) + 1;
     private double decreaseFactor= new Random().nextDouble();   // must be lower than or equal to 1
     private double increaseFactor= new Random().nextDouble()+1; // must bre greater than or equal to 1
     private double profit = 0;

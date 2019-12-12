@@ -5,6 +5,9 @@ import com.mu.common.Buyer;
 import com.mu.common.SelledGood;
 import com.mu.common.Seller;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 public class AuctionLeveled extends Auction{
     List<Buyer> winners;
     ArrayList<SelledGood> selledGoods;
+    PrintWriter writer = null;
 
 
     public AuctionLeveled(AuctionParams params){
@@ -32,6 +36,13 @@ public class AuctionLeveled extends Auction{
         }
     }
     public void start(){
+        try {
+            writer = new PrintWriter("LeveledComm.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         for(var i=0; i<params.getR(); i++) {
             // the order must be random for each round
             Collections.shuffle(sellers);
@@ -46,7 +57,7 @@ public class AuctionLeveled extends Auction{
                     var counter = 0;
                     var pos = 0;
                     for (int j = 0; j < selledGoods.size(); j++){
-                        if (selledGoods.get(i).getNumBuyer() == buyer.getNumber()){
+                        if (selledGoods.get(j).getNumBuyer() == buyer.getNumber()){
                             counter += 1;
                             pos = j;
                         }
@@ -78,8 +89,10 @@ public class AuctionLeveled extends Auction{
                 var winningBidder = sortedBuyers.get(0);
                 var counter = 0;
                 var pos = 0;
+
+                System.out.println(selledGoods.size());
                 for (int j = 0; j < selledGoods.size(); j++){
-                    if (selledGoods.get(i).getNumBuyer() == winningBidder.getNumber()){
+                    if (selledGoods.get(j).getNumBuyer() == winningBidder.getNumber()){
                         counter += 1;
                         pos = j;
                     }
@@ -95,15 +108,62 @@ public class AuctionLeveled extends Auction{
                 }
                 System.out.println("Buyer " + winningBidder.getNumber() + " wins the round " + (i + 1) + " of Seller " + seller.getNumber() + " at " + winningPrice);
 
-                var oldProfit = selledGoods.get(pos).getMarketprice() - selledGoods.get(pos).getPrice() - (
-                        params.getEpsilon() * winningBidder.getBNK());
+                double penalityFee;
+                if (counter > 0) {
 
-                var newProfit = marketPrice - winningPrice - (params.getEpsilon() * selledGoods.get(pos).getBid());
+                    System.out.println("ccccc");
+                    var oldProfit = selledGoods.get(pos).getMarketprice() - selledGoods.get(pos).getPrice() - (
+                            params.getEpsilon() * winningBidder.getBNK());
 
-                winners.add(winningBidder);
-                winningBidder.calculateProfit(marketPrice, winningPrice - sortedBuyers.get(0).getPenalityFee());
-                seller.calculateProfit(marketPrice, winningPrice + sortedBuyers.get(0).getPenalityFee(), winningBidder);
+                    var newProfit = marketPrice - winningPrice - (params.getEpsilon() * selledGoods.get(pos).getBid());
+
+                    var deltaMarket = marketPrice - selledGoods.get(pos).getMarketprice();
+                    var deltaBid = winningPrice - selledGoods.get(pos).getPrice();
+                    if( deltaMarket > deltaBid){
+                        // profitto maggiore
+                        winners.add(winningBidder);
+
+                        penalityFee = params.getEpsilon() * selledGoods.get(pos).getPrice();
+                        seller.calculateProfit(marketPrice, winningPrice, winningBidder);
+                        selledGoods.get(pos).getSeller().calculateProfit(0, penalityFee, winningBidder);
+
+                        // new item that was selled.
+                        SelledGood s  = new SelledGood();
+                        s.setBid(winningBidder.getBNK());
+                        s.setMarketprice(marketPrice);
+                        s.setNumBuyer(winningBidder.getNumber());
+                        s.setPrice(winningPrice);
+                        s.setSeller(seller);
+
+                        selledGoods.add(s);
+                        System.out.println("Buyer choose to keep the new good with profit: " + newProfit + " instead of old one: " + oldProfit );
+                    } else {
+
+                        penalityFee = params.getEpsilon() * winningPrice;
+                        seller.calculateProfit(marketPrice, winningPrice + penalityFee, winningBidder);
+                        System.out.println("Buyer choose to keep the new old with profit: " + oldProfit + " instead of new one: " + newProfit );
+                    }
+
+                    writer.println("******");
+                    writer.close();
+                    winningBidder.calculateProfit(marketPrice, winningPrice - penalityFee);
+                } else {
+
+                    winners.add(winningBidder);
+                    winningBidder.calculateProfit(marketPrice, winningPrice);
+                    seller.calculateProfit(marketPrice, winningPrice, winningBidder);
+
+
+                    SelledGood s = new SelledGood();
+                    s.setBid(winningBidder.getBNK());
+                    s.setMarketprice(marketPrice);
+                    s.setNumBuyer(winningBidder.getNumber());
+                    s.setPrice(winningPrice);
+                    s.setSeller(seller);
+                    selledGoods.add(s);
+                }
             }
+
             winners.clear(); // empty winner list for the next round
         }
     }

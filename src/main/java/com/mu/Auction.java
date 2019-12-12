@@ -20,7 +20,10 @@ public class Auction {
 
     public static void main(String[] args) {
         System.out.println("Hello auction!");
-        var params = AuctionParams.getDefault();
+        var params = AuctionParams.getDefault().setLeveled(true);
+        params.setK(7);
+        params.setN(9);
+        params.setR(4);
         Auction auction;
         System.out.println("Parameters set for the auction are --> " + params);
 
